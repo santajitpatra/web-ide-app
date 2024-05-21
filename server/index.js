@@ -1,8 +1,11 @@
+var cors = require("cors");
+const fs = require("fs/promises");
 const express = require("express");
 const http = require("node:http");
 const os = require("os");
-const { Server: SocketServer } = require("socket.io");
+const path = require("path");
 const pty = require("node-pty");
+const { Server: SocketServer } = require("socket.io");
 
 const shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 
@@ -10,7 +13,7 @@ const ptyProcess = pty.spawn(shell, [], {
   name: "xterm-color",
   cols: 80,
   rows: 30,
-  cwd: process.env.INIT_CWD,
+  cwd: process.env.INIT_CWD + "/user",
   env: process.env,
 });
 
@@ -20,11 +23,9 @@ const io = new SocketServer({
   cors: "*",
 });
 
-io.attach(server);
+app.use(cors());
 
-// app.get("/", (req, res) => {
-//   res.send("<h1>Hello world</h1>");
-// });
+io.attach(server);
 
 ptyProcess.onData((data) => {
   io.emit("terminal:data", data);
@@ -42,6 +43,34 @@ io.on("connection", (socket) => {
   });
 });
 
+app.get("/files", async (req, res) => {
+  const fileTree = await generateFileTree(process.env.INIT_CWD + "/user");
+  return res.json({ tree: fileTree });
+});
+
 server.listen(9000, () => {
   console.log("server running at http://localhost:9000");
 });
+
+async function generateFileTree(directory) {
+  const tree = {};
+
+  async function buildTree(currentDir, currentTree) {
+    const files = await fs.readdir(currentDir);
+
+    for (const file of files) {
+      const filePath = path.join(currentDir, file);
+      const stats = await fs.stat(filePath);
+
+      if (stats.isDirectory()) {
+        currentTree[file] = {};
+        await buildTree(filePath, currentTree[file]);
+      } else {
+        currentTree[file] = null;
+      }
+    }
+  }
+
+  await buildTree(directory, tree);
+  return tree;
+}
