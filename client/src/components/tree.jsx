@@ -1,8 +1,12 @@
 export const FileTreeNode = ({ fileName, nodes }) => {
+  const isDir = !!nodes;
 
   return (
-    <div>
-      {fileName}
+    <div style={{marginLeft: "10px"}}>
+      <p className={isDir ? "" : "file-node"}>
+        {isDir ? "📁" : "📄"}
+        {fileName}
+      </p>
       {nodes && (
         <ul>
           {Object.keys(nodes).map((child) => (

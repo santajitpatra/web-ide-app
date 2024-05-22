@@ -2,6 +2,7 @@ import Terminal from "./components/terminal";
 import "./App.css";
 import { useEffect, useState } from "react";
 import FileTree from "./components/tree";
+import socket from "./socket";
 
 function App() {
   const [fileTree, setFileTree] = useState([]);
@@ -14,6 +15,13 @@ function App() {
 
   useEffect(() => {
     getFileTree();
+  }, []);
+
+  useEffect(() => {
+    socket.on("file:change", getFileTree);
+    return () => {
+      socket.off("file:change", getFileTree);
+    };
   }, []);
 
 

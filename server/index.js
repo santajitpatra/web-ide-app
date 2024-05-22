@@ -1,4 +1,5 @@
-var cors = require("cors");
+const chokidar = require("chokidar");
+const cors = require("cors");
 const fs = require("fs/promises");
 const express = require("express");
 const http = require("node:http");
@@ -26,6 +27,10 @@ const io = new SocketServer({
 app.use(cors());
 
 io.attach(server);
+
+chokidar.watch("./user").on("all", (event, path) => {
+io.emit("file:change", path);
+});
 
 ptyProcess.onData((data) => {
   io.emit("terminal:data", data);
