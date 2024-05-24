@@ -29,7 +29,7 @@ app.use(cors());
 io.attach(server);
 
 chokidar.watch("./user").on("all", (event, path) => {
-io.emit("file:change", path);
+io.emit("file:refresh", path);
 });
 
 ptyProcess.onData((data) => {
@@ -38,6 +38,10 @@ ptyProcess.onData((data) => {
 
 io.on("connection", (socket) => {
   console.log("a user connected", socket.id);
+
+  socket.on("file:change", async ({ path, content }) => {
+    await fs.writeFile(`./user${path}`, content);
+  });
 
   socket.on("terminal:write", (data) => {
     ptyProcess.write(data);
@@ -52,6 +56,12 @@ app.get("/files", async (req, res) => {
   const fileTree = await generateFileTree(process.env.INIT_CWD + "/user");
   return res.json({ tree: fileTree });
 });
+
+app.get("/files/content", async (req, res) => {
+const  path  = req.query.path;
+const  content = await fs.readFile(`./user${path}`, "utf-8");
+return res.json({ content });
+})
 
 server.listen(9000, () => {
   console.log("server running at http://localhost:9000");
