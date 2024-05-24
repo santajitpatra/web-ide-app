@@ -3,9 +3,15 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import FileTree from "./components/tree";
 import socket from "./socket";
+import AceEditor from "react-ace";
+
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-github";
+import "ace-builds/src-noconflict/ext-language_tools";
 
 function App() {
   const [fileTree, setFileTree] = useState([]);
+  const [selectedFile, setSelectedFile] = useState("");
 
   const getFileTree = async () => {
     const response = await fetch("http://localhost:9000/files");
@@ -24,14 +30,19 @@ function App() {
     };
   }, []);
 
-
   return (
     <div className="playground-container">
       <div className="editor-container">
         <div className="files">
-          <FileTree tree={fileTree} />
+          <FileTree
+            onSelect={(path) => setSelectedFile(path)}
+            tree={fileTree}
+          />
         </div>
-        <div className="editor"></div>
+        <div className="editor">
+          {selectedFile && <p>{selectedFile.replaceAll("/", " > ")}</p>}
+          <AceEditor />
+        </div>
       </div>
       <div className="terminal-container">
         <Terminal />

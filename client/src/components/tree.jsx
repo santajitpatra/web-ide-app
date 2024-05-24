@@ -1,8 +1,15 @@
-export const FileTreeNode = ({ fileName, nodes }) => {
+export const FileTreeNode = ({ fileName, nodes,onSelect, path }) => {
   const isDir = !!nodes;
 
   return (
-    <div style={{marginLeft: "10px"}}>
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        if (isDir) return;
+        onSelect(path);
+      }}
+      style={{ marginLeft: "10px" }}
+    >
       <p className={isDir ? "" : "file-node"}>
         {isDir ? "📁" : "📄"}
         {fileName}
@@ -10,7 +17,9 @@ export const FileTreeNode = ({ fileName, nodes }) => {
       {nodes && (
         <ul>
           {Object.keys(nodes).map((child) => (
-            <FileTreeNode key={child} fileName={child} nodes={nodes[child]} />
+            <FileTreeNode key={child}
+            onSelect={onSelect}
+            path={path + "/" + child} fileName={child} nodes={nodes[child]} />
           ))}
         </ul>
       )}
@@ -18,10 +27,10 @@ export const FileTreeNode = ({ fileName, nodes }) => {
   );
 };
 
-const FileTree = ({ tree }) => {
+const FileTree = ({ tree, onSelect }) => {
   return (
     <div>
-      <FileTreeNode fileName="/" nodes={tree} />
+      <FileTreeNode onSelect={onSelect} fileName="/" path={""} nodes={tree} />
     </div>
   );
 };
