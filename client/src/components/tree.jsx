@@ -14,7 +14,7 @@ export const FileTreeNode = ({ fileName, nodes,onSelect, path }) => {
         {isDir ? "📁" : "📄"}
         {fileName}
       </p>
-      {nodes && (
+      {nodes && fileName!=="node_modules" && (
         <ul>
           {Object.keys(nodes).map((child) => (
             <FileTreeNode key={child}

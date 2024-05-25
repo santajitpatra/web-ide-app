@@ -45,7 +45,6 @@ function App() {
     if (selectedFile) getFileContents();
   }, [selectedFile, getFileContents]);
 
-
   //  get all files on mount (and on file refresh)
   useEffect(() => {
     getFileTree();
@@ -83,7 +82,12 @@ function App() {
           />
         </div>
         <div className="editor">
-          {selectedFile && <p>{selectedFile.replaceAll("/", " > ")}</p>}
+          {selectedFile && (
+            <p>
+              {selectedFile.replaceAll("/", " > ")}
+              {isSaved ? "Save" : "Unsave"}
+            </p>
+          )}
           <AceEditor value={code} onChange={(code) => setCode(code)} />
         </div>
       </div>
